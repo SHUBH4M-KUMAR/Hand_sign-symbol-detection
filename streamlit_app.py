@@ -1,75 +1,66 @@
 import streamlit as st
 import cv2
 import numpy as np
-from PIL import Image
 import tensorflow as tf
-import os
-from tensorflow.keras.models import load_model as keras_load_model
+from object_detection.utils import label_map_util
+from object_detection.utils import visualization_utils as viz_utils
 
-def load_custom_model():
-    # Get the absolute path to the current script directory
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+# Function to load the object detection model
+def load_detection_model(config_path, checkpoint_path):
+    configs = config_util.get_configs_from_pipeline_file(config_path)
+    detection_model = model_builder.build(model_config=configs['model'], is_training=False)
+    ckpt = tf.compat.v2.train.Checkpoint(model=detection_model)
+    ckpt.restore(tf.train.latest_checkpoint(checkpoint_path)).expect_partial()
+    return detection_model
 
-    # Specify the relative path to the model within the repository
-    model_relative_path = "after_5000_steps/ckpt-2"
+# Function to perform object detection on an image
+@st.cache(allow_output_mutation=True)
+def detect_objects(image, model):
+    input_tensor = tf.convert_to_tensor(np.expand_dims(image, axis=0), dtype=tf.float32)
+    detections = detect_fn(input_tensor)
 
-    # Construct the full path to the model file in your GitHub repository
-    model_path = os.path.join(script_dir, model_relative_path)
+    num_detections = int(detections.pop('num_detections'))
+    detections = {key: value[0, :num_detections].numpy() for key, value in detections.items()}
+    detections['num_detections'] = num_detections
+    detections['detection_classes'] = detections['detection_classes'].astype(np.int64)
 
-    # Load the model
-    model = keras_load_model(model_path)
+    return detections
 
-
-# Preprocess input image for the model
-def preprocess_image(image_path):
-    img = tf.keras.preprocessing.image.load_img(image_path, target_size=(224, 224))
-    img_array = tf.keras.preprocessing.image.img_to_array(img)
-    img_array = tf.expand_dims(img_array, 0)
-    return img_array
-
-# Preprocess input video frames for the model
-def preprocess_video_frame(frame):
-    frame = cv2.resize(frame, (224, 224))
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    frame = tf.keras.preprocessing.image.img_to_array(frame)
-    frame = tf.expand_dims(frame, 0)
-    return frame
-
-# Perform hand sign detection on the input
-def predict_hand_sign(input_data, model):
-    # Add code to perform predictions using your model on the input data
-    # This is a placeholder; replace it with your actual prediction logic
-    prediction = model.predict(input_data)
-    return prediction
-
-# Main Streamlit app
+# Streamlit app
 def main():
-    st.title("Hand Sign Detection with Streamlit")
+    st.title("Object Detection with Streamlit")
 
-    uploaded_file = st.file_uploader("Choose a file", type=["jpg", "png", "mp4"])
+    config_path = st.sidebar.text_input("Enter config file path:")
+    checkpoint_path = st.sidebar.text_input("Enter checkpoint path:")
+    
+    detection_model = load_detection_model(config_path, checkpoint_path)
 
-    # Load the pre-trained model
-    model = load_custom_model()
+    cap = cv2.VideoCapture(0)
 
-    if uploaded_file is not None:
-        if uploaded_file.type.startswith('image'):
-            # If the uploaded file is an image
-            input_data = preprocess_image(uploaded_file)
-            prediction = predict_hand_sign(input_data, model)
-            st.image(uploaded_file, caption=f"Prediction: {prediction}", use_column_width=True)
-        elif uploaded_file.type.startswith('video'):
-            # If the uploaded file is a video
-            cap = cv2.VideoCapture(uploaded_file)
-            while True:
-                ret, frame = cap.read()
-                if not ret:
-                    break
-                input_data = preprocess_video_frame(frame)
-                prediction = predict_hand_sign(input_data, model)
-                st.image(frame, caption=f"Prediction: {prediction}", use_column_width=True)
-            cap.release()
-        else:
-            st.warning("Unsupported file format. Please upload an image or a video.")
+    while st.checkbox("Run Object Detection"):
+        ret, frame = cap.read()
+        image_np = np.array(frame)
+
+        detections = detect_objects(image_np, detection_model)
+
+        label_id_offset = 1
+        image_np_with_detections = image_np.copy()
+
+        viz_utils.visualize_boxes_and_labels_on_image_array(
+            image_np_with_detections,
+            detections['detection_boxes'],
+            detections['detection_classes'] + label_id_offset,
+            detections['detection_scores'],
+            category_index,
+            use_normalized_coordinates=True,
+            max_boxes_to_draw=5,
+            min_score_thresh=0.6,
+            agnostic_mode=False
+        )
+
+        st.image(cv2.cvtColor(image_np_with_detections, cv2.COLOR_BGR2RGB), channels="BGR")
+
+    cap.release()
 
 if __name__ == "__main__":
     main()
