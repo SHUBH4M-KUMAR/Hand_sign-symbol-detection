@@ -3,10 +3,9 @@ import cv2
 import numpy as np
 from PIL import Image
 import tensorflow as tf
-import os
-from tensorflow.keras.models import load_model
+import osfrom tensorflow.keras.models import load_model as keras_load_model
 
-def load_model():
+def load_custom_model():
     # Get the absolute path to the current script directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -17,9 +16,8 @@ def load_model():
     model_path = os.path.join(script_dir, model_relative_path)
 
     # Load the model
-    model = load_model(model_path)
+    model = keras_load_model(model_path)
 
-    return model
 
 # Preprocess input image for the model
 def preprocess_image(image_path):
