@@ -5,3 +5,6 @@ Pillow
 tensorflow==2.10.1
 streamlit
 matplotlib
+tensorflow-hub
+tensorflow-addons
+tf_slim
