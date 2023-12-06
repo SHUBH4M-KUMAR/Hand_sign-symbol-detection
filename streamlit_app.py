@@ -3,10 +3,22 @@ import cv2
 import numpy as np
 from PIL import Image
 import tensorflow as tf
+import os
+from tensorflow.keras.models import load_model
 
-# Load your pre-trained model (replace this with your actual model loading code)
 def load_model():
-    model = tf.keras.models.load_model("/after_5000_steps/ckpt-2")
+    # Get the absolute path to the current script directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Specify the relative path to the model within the repository
+    model_relative_path = "after_5000_steps/ckpt-2"
+
+    # Construct the full path to the model file in your GitHub repository
+    model_path = os.path.join(script_dir, model_relative_path)
+
+    # Load the model
+    model = load_model(model_path)
+
     return model
 
 # Preprocess input image for the model
