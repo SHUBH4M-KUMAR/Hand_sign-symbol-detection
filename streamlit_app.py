@@ -6,7 +6,7 @@ import tensorflow as tf
 
 # Load your pre-trained model (replace this with your actual model loading code)
 def load_model():
-    model = tf.keras.models.load_model("path/to/your/model")
+    model = tf.keras.models.load_model("/after_5000_steps/ckpt-2")
     return model
 
 # Preprocess input image for the model
