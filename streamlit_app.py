@@ -49,7 +49,7 @@ def main():
     uploaded_file = st.file_uploader("Choose a file", type=["jpg", "png", "mp4"])
 
     # Load the pre-trained model
-    model = load_model()
+    model = load_custom_model()
 
     if uploaded_file is not None:
         if uploaded_file.type.startswith('image'):
