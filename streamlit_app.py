@@ -3,28 +3,28 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
-# Function to load the checkpoint model
+# Function to load the TensorFlow checkpoint model
 def load_model(model_path):
-    model = tf.saved_model.load(model_path)
+    # Create a new model
+    model = tf.keras.models.Sequential([
+        # Add your layers here (if needed)
+    ])
+    # Load the weights from the checkpoint
+    model.load_weights(model_path)
     return model
 
 # Function to perform object detection using the loaded model
 def detect_objects(model, image):
-    # Preprocess the image
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image = np.expand_dims(image, axis=0)
-    image_tensor = tf.convert_to_tensor(image)
-
-    # Perform inference
-    detections = model(image_tensor)
-
-    return detections
+    # Preprocess the image (if needed)
+    # Perform inference (if needed)
+    # Process the inference results and return detections
+    pass
 
 # Main function
 def main():
-    st.title("Object Detection with Checkpoint Model")
+    st.title("Object Detection with TensorFlow Checkpoint Model")
 
-    # Load the checkpoint model
+    # Load the TensorFlow checkpoint model
     model_path = "after_5000_steps"
     model = load_model(model_path)
 
