@@ -1,0 +1,30 @@
+item {
+    name: "Hand",
+    id: 1,
+    display_name: "Hand"
+}
+item {
+    name: "I Love You",
+    id: 2,
+    display_name: "I Love You"
+}
+item {
+    name: "Namaste",
+    id: 3,
+    display_name: "Namaste"
+}
+item {
+    name: "No",
+    id: 4,
+    display_name: "No"
+}
+item {
+    name: "Thank You",
+    id: 5,
+    display_name: "Thank You"
+}
+item {
+    name: "Yes",
+    id: 6,
+    display_name: "Yes"
+}
